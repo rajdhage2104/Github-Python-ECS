@@ -25,7 +25,8 @@ The CI/CD pipeline in this repository automates the following steps:
 4. Docker image building
 5. Security scanning with Trivy
 6. Pushing the Docker image to Amazon ECR
-7. Deploying the application to Amazon ECS
+7. Updating and registering the ECS task definition
+8. Deploying the application to Amazon ECS
 
 ## ECS Deployment Setup
 
@@ -35,9 +36,10 @@ To deploy this application to Amazon ECS with EC2 instances, you need to set up 
 
 - **EC2 Launch Type ECS Cluster**: Create an ECS cluster with EC2 instances through the AWS console
 - **EC2 Instance(s)**: Launch EC2 instances with the ECS-optimized AMI and register them to your cluster
-- **ECS Task Definition**: Use the provided `task-definition.json` as a reference when creating your task definition in the AWS console
 - **ECS Service**: Create a service through the AWS console to run and maintain your tasks
 - **ECR Repository**: Create an ECR repository through the AWS console to store your Docker images
+
+The task definition is automatically created and updated by the CI/CD pipeline.
 
 ### 2. EC2 Instance Setup for ECS
 
