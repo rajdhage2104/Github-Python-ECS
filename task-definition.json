@@ -1,0 +1,47 @@
+{
+  "family": "python-app",
+  "networkMode": "bridge",
+  "executionRoleArn": "arn:aws:iam::058264463902:role/ECS-Task-Execution-Role-RajD",
+  "taskRoleArn": "arn:aws:iam::058264463902:role/ECS-task-Role-RajD",
+  "containerDefinitions": [
+    {
+      "name": "python-app",
+      "image": "058264463902.dkr.ecr.us-east-1.amazonaws.com/python-ecs-repo:${{ github.sha }}",
+      "essential": true,
+      "portMappings": [
+        {
+          "containerPort": 5000,
+          "hostPort": 0,
+          "protocol": "tcp"
+        }
+      ],
+      "logConfiguration": {
+        "logDriver": "awslogs",
+        "options": {
+          "awslogs-group": "/ecs/python-app",
+          "awslogs-region": "us-east-1",
+          "awslogs-stream-prefix": "ecs"
+        }
+      },
+      "cpu": 256,
+      "memory": 512,
+      "environment": [
+        {
+          "name": "ENV",
+          "value": "production"
+        }
+      ]
+    }
+  ],
+  "requiresCompatibilities": [
+    "EC2"
+  ],
+  "cpu": "256",
+  "memory": "512",
+  "placementConstraints": [
+    {
+      "type": "memberOf",
+      "expression": "attribute:ecs.instance-type =~ t2.medium"
+    }
+  ]
+}

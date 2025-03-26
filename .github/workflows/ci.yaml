@@ -17,7 +17,7 @@ permissions:
 jobs:
         # CI job
         CI:
-          runs-on: self-hosted
+          runs-on: ubuntu-latest
                           
           # Checkout code from the repository
           steps:
@@ -126,52 +126,27 @@ jobs:
                docker push ${{ secrets.AWS_ACCOUNT_ID}}.dkr.ecr.${{ secrets.AWS_REGION }}.amazonaws.com/${{ secrets.ECR_REPO_NAME }}:${{ github.sha }}
 
 
- # CD job
-        # deploy:
-        #   # needs: CI  # This ensures that the deployment process only runs when the Docker image has been successfully built and pushed to Amazon ECR
-        #   # runs-on: self-hosted
-        #   steps:
-        #     - name: Checkout Repository
-        #       uses: actions/checkout@v2
-
-      # Configure AWS credentials using OIDC
-          - name: Configure AWS credentials
+        # Deploy to Amazon ECS with EC2 instances
+          - name: Configure AWS credentials for ECS deployment
             uses: aws-actions/configure-aws-credentials@v3
             with:
               role-to-assume: ${{ secrets.AWS_IAM_ARN }}
-              role-session-name: eks-session
+              role-session-name: ecs-session
               aws-region: ${{ secrets.AWS_REGION }}
   
-
-    # Update Deployment YAML with the new image and Deploy image to EKS 
-          - name: Update Deployment YAML with New Image
+          # Update the ECS service to use the new image
+          - name: Deploy to Amazon ECS
             run: |
-              aws eks update-kubeconfig --region ${{ secrets.AWS_REGION }} --name ${{ secrets.EKS_CLUSTER_NAME }}
-              helm uninstall sample-python-app
-              sleep 30
-              IMAGE="${{ secrets.IMAGE_NAME }}:${{ github.sha }}"
-              sed -i "s|repository:.*|repository: $IMAGE|" Helm/values.yaml
-              helm package Helm
-              helm install sample-python-app ./Helm
-              # sed -i "s|image: .*|image: $IMAGE|" manifests/deployment.yaml
-              # cd manifests
-              # kubectl apply -f config.yaml
-              # kubectl apply -f secrets.yaml
-              # kubectl apply -f deployment.yaml
-              # kubectl apply -f service.yaml
-              kubectl get pods
-              kubectl get svc
+              # Update the ECS service to use the new image
+              aws ecs update-service --cluster ${{ secrets.ECS_CLUSTER }} \
+                                     --service ${{ secrets.ECS_SERVICE }} \
+                                     --force-new-deployment
 
-
-      # Post-deployment cleanup
-          - name: Post-Deployment Cleanup
+          # Wait for the deployment to complete
+          - name: Wait for service to be stable
             run: |
-              chmod -R 755 /home/ubuntu/actions-runner
-              chown -R ubuntu:ubuntu /home/ubuntu/actions-runner
-            if: success()  # Only run this step if the previous steps were successful
-    
- 
-             
-         
-         
-        
+              aws ecs wait services-stable --cluster ${{ secrets.ECS_CLUSTER }} \
+                                          --services ${{ secrets.ECS_SERVICE }}
+              echo "Deployment to ECS completed successfully"
+
+  
