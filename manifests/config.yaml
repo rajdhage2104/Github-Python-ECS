@@ -1,0 +1,7 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: dbconfig
+data:
+  DB_USER_NAME: ctgdevops
+  DB_NAME: mydatabase

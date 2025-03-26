@@ -1,0 +1,29 @@
+replicaCount: 3
+
+image:
+  repository: 058264463902.dkr.ecr.us-east-1.amazonaws.com/ignite-eks-repo:latest
+  pullPolicy: Always
+
+service:
+  type: NodePort
+  port: 5000
+
+resources:
+  requests:
+    memory: "100Mi"
+    cpu: "50m"
+  limits:
+    memory: "128Mi"
+    cpu: "100m"
+
+env:
+  logLevel: "INFO"
+  logFile: "/var/log/app.log"
+
+dbConfig:
+  userName: "ctgdevops"
+  dbName: "mydatabase"
+
+dbSecrets:
+  password: "ZGV2b3BzMTIz"
+  host: "aWduaXRlLXJkcy5jdmdneWE2a2cxcjcudXMtZWFzdC0xLnJkcy5hbWF6b25hd3MuY29t"
